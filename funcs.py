@@ -12,8 +12,6 @@ def read_file(path: str, delimeter=",") -> list:
     ----------
     path: str
         Path to file
-    cols: int
-        Number of columns, default 1
     delimeter: str
         Delimeter symbol, default ','
     """
