@@ -4,6 +4,7 @@ from scipy.signal import fftconvolve, find_peaks, peak_widths
 from scipy.optimize import curve_fit
 
 ELECTRON_MASS = 9.1093837139e-31
+TUBE_LENGTH = 1127
 
 
 def read_file(path: str, delimeter=",") -> list:
@@ -144,7 +145,7 @@ def time_of_flight(E: float):  # ns
     time_of_flight: float
         Electron time of flight in a straight line in ns
     """
-    return 1120 / velocity(E) * 1e9
+    return TUBE_LENGTH / velocity(E) * 1e9
 
 
 def time_to_energy(t, t0, E0, s):
