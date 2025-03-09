@@ -89,7 +89,7 @@ def gauss_with_tail(x, x0, sigma, A, tau, B):
     )[::2]
 
 
-def approximate(x, y, p0, ax):
+def approximate(x, y, ax, p0=None):
     """
     Gaussian with exponential tail approximating function.
 
