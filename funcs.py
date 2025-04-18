@@ -5,6 +5,7 @@ from scipy.optimize import curve_fit
 
 ELECTRON_MASS = 9.1093837139e-31
 TUBE_LENGTH = 1127
+ELECTRON_CHARGE = 1.60217663e-19
 
 
 def read_file(path: str, delimeter=",") -> list:
@@ -193,9 +194,7 @@ def get_bins(xpoints, xdata) -> tuple:
     return istart, istop
 
 
-def decorate(
-    axes: plt.axes, x_range: tuple, y_range: tuple, xlabel="", ylabel="", set=True
-):
+def decorate(axes: plt.axes, x_range: tuple, y_range: tuple, xlabel='', ylabel='', title='', legend=False, set=True):
     """
     Parameters
     ----------
@@ -216,12 +215,15 @@ def decorate(
     y_start, y_end, y_interval = y_range[0], y_range[1], y_range[2]
     axes.set_xlabel(xlabel)
     axes.set_ylabel(ylabel)
+    axes.set_title(title)
     axes.tick_params(which="both", direction="in")
     axes.grid(True, which="major", ls="-", c="gray")
     axes.grid(True, which="minor", ls=":")
-    axes.set_xticks(np.arange(x_start, x_end + 1, x_interval))
-    axes.set_xticks(np.arange(x_start, x_end + 1, x_interval / 2), minor=True)
-    axes.set_yticks(np.arange(y_start, y_end + 1, y_interval))
-    axes.set_yticks(np.arange(y_start, y_end + 1, y_interval / 2), minor=True)
+    axes.set_xticks(np.arange(x_start, x_end+1, x_interval))
+    axes.set_xticks(np.arange(x_start, x_end+1, x_interval/2), minor=True)
+    axes.set_yticks(np.arange(y_start, y_end+1, y_interval))
+    axes.set_yticks(np.arange(y_start, y_end+1, y_interval/2), minor=True)
     if set:
         axes.set(xlim=(x_start, x_end), ylim=(y_start, y_end))
+    if legend:
+        axes.legend()
