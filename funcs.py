@@ -2,9 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import fftconvolve, find_peaks, peak_widths
 from scipy.optimize import curve_fit
+from IPython.display import display_html
+from itertools import chain,cycle
 
 ELECTRON_MASS = 9.1093837139e-31
-TUBE_LENGTH = 1127
+TUBE_LENGTH = 1000
+RET_POS = 90
 ELECTRON_CHARGE = 1.60217663e-19
 
 
@@ -149,6 +152,46 @@ def time_of_flight(E: float):  # ns
     return TUBE_LENGTH / velocity(E) * 1e9
 
 
+def time_ret(E):
+    """
+    Parameters
+    ----------
+    E: float
+        Electron kinetic energy in eV
+    
+    Returns
+    -------
+    time_ret: float
+        Electron time of flight in a straight line with retarding field in ns
+    """
+    return np.sqrt(ELECTRON_MASS/2)*(RET_POS*1e-3/np.sqrt(E*ELECTRON_CHARGE) +
+                                     (TUBE_LENGTH-RET_POS)*1e-3/np.sqrt((E-50)*ELECTRON_CHARGE))*1e9
+
+
+def res(energies):
+    t_ret, t_tof, R_ret, R_tof = [], [], [], []
+    for E in energies:
+        t1 = time_ret(E)
+        t2 = time_ret(E - 1)
+        t1_tof = time_of_flight(E)
+        t2_tof = time_of_flight(E - 1)
+        dt = t2-t1
+        dt_tof = t2_tof - t1_tof
+        R1 = dt_tof/time_of_flight(E)/2 # двойка потому что по критерию рэлея
+        R = dt/time_ret(E)/2
+        t_ret.append(t1)
+        t_tof.append(t1_tof)
+        R_ret.append(np.round(R*100, 2))
+        R_tof.append(np.round(R1*100, 2))
+    return {
+        "Energy, eV": energies[:len(t_ret)],
+        "TOF, ns": t_tof,
+        "Rtof": R_tof,
+        "TRET, ns": t_ret,
+        "Rret": R_ret
+    }
+
+
 def time_to_energy(t, t0, E0, s):
     """
     Conversion function for time-of-flight in ns
@@ -227,3 +270,30 @@ def decorate(axes: plt.axes, x_range: tuple, y_range: tuple, xlabel='', ylabel='
         axes.set(xlim=(x_start, x_end), ylim=(y_start, y_end))
     if legend:
         axes.legend()
+
+def display_side_by_side(*args,titles=cycle([''])):
+    """Displays pandas DataFrames side by side"""
+    # Add div to put output in a flexbox with the required properties.
+    open_div = '<div style="display: flex; justify-content: center; align-items: flex-start";>'
+    close_div = "</div>"
+    html_str=''
+    for df,title in zip(args, chain(titles,cycle(['</br>'])) ):
+        # Put everything in a div and add the headline before to appear on top
+        html_str+=f'<div>'
+        html_str+=f'<h2 style="text-align: center;">{title}</h2>'
+        html_str+='<th style="text-align:center;"><td style="vertical-align:top">'
+        html_str+=df.to_html().replace('table','table style="display:inline"')
+        html_str+='</td></th></div>'
+        # Add spacing to tables.
+        html_str+='<span style="display:inline-block; width: 10px;"></span>'
+    # Put everything together.
+    display_html(f"{open_div}{html_str}{close_div}",raw=True)
+
+def display_in_column(*args,titles=cycle([''])):
+    html_str=''
+    for df,title in zip(args, chain(titles,cycle(['</br>'])) ):
+        html_str+='<th style="text-align:center"><td style="vertical-align:top">'
+        html_str+=f'<h2 style="text-align: center;">{title}</h2>'
+        html_str+=df.to_html().replace('table','table style="display:inline"')
+        html_str+='</td></th>'
+    display_html(html_str,raw=True)
